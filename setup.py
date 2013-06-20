@@ -24,7 +24,6 @@ setup(
     version=__version__,
     description="Simple image box arithmatic",
     packages=["boxmath"],
-    tests_require=["pytest"],
+    tests_require=["pytest", "pytest-quickcheck"],
     cmdclass=cmdclass
 )
-      
