@@ -22,10 +22,15 @@ appropriately:
     Crop l1 t1 r1 b1 . Crop l2 t2 r2 b2 = Crop l1+l2 t1+t2 l1+r2 t1+b2
 
     (ResizeCrop r c) scale (Resize w h) -> ResizeCrop r c
+    (ResizeCrop r Crop l t r b) scale (Resize w h) = ResizeCrop Resize w*w_scale h*h_scale crop
+         where
+             w_scale = w / (r-l)
+             h_scale = h / (b-t)
+             crop = Crop l*w_scale t*h_scale r*w_scale b*h_scale
 
     ResizeCrop r c . ResizeCrop r c -> ResizeCrop r c
     ResizeCrop r1 c1 . ResizeCrop r2 c2 = do 
-        r3, c3 = ResizeCrop r1 c1) scale r2
+        r3, c3 = ResizeCrop r1 c1 scale r2
         ResizeCrop r3 (c3 . c2)
 ```
 
