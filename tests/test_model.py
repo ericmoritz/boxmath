@@ -9,8 +9,19 @@ def get_percent(total, percent):
     )
 
 
-@pytest.mark.randomize(left=int, top=int, right=int, bottom=int, min_num=1)
-@pytest.mark.randomize(width=int, height=int, min_num=1)
+def half(num):
+    return Fraction(num, 2)
+
+
+def double(num):
+    return num * 2
+
+
+MAX=1000000
+
+@pytest.mark.randomize(left=int, top=int, right=int, bottom=int, min_num=1,
+                       max_num=MAX)
+@pytest.mark.randomize(width=int, height=int, min_num=1, max_num=MAX)
 def test_resize(width, height, left, top, right, bottom):
     # sort the percents
     top, bottom = sorted([top, bottom])
@@ -24,7 +35,7 @@ def test_resize(width, height, left, top, right, bottom):
     # ignore 0 sized crops
     if left == right or top == bottom:
         return
-    
+
 
     # identity proprety
     box = model.new_box(width, height, 0, 0, width, height)
@@ -39,16 +50,16 @@ def test_resize(width, height, left, top, right, bottom):
 
     # inverse property
     box = model.new_box(width, height, left, top, right, bottom)
-    box2 = model.resize(box, width / 2, height / 2)
+    box2 = model.resize(box, half(width), half(height))
     box2_size = size(box2)
-    box2 = model.resize(box2, 
-                          box2_size.width * 2, 
-                          box2_size.height * 2
-                          )
-    
+    box2 = model.resize(box2,
+                        double(box2_size.width),
+                        double(box2_size.height),
+    )
 
-@pytest.mark.randomize(orig_size=int, min_num=1)
-@pytest.mark.randomize(req_size=int, min_num=1)
+
+@pytest.mark.randomize(orig_size=int, min_num=1, max_num=MAX)
+@pytest.mark.randomize(req_size=int, min_num=1, max_num=MAX)
 @pytest.mark.randomize(offset1=int, offset2=int, min_num=0, max_num=100)
 def test_scale_dimension(orig_size, req_size, offset1, offset2):
     # the two offsets have to be < org_size so we made them a
@@ -62,7 +73,8 @@ def test_scale_dimension(orig_size, req_size, offset1, offset2):
         return None
 
 
-    def invert((new_size, new_offset1, new_offset2)):
+    def invert(ret):
+        new_size, new_offset1, new_offset2 = ret
         crop_size = offset2 - offset1
         return model.scale_dimension(
             crop_size,
@@ -85,4 +97,3 @@ def test_scale_dimension(orig_size, req_size, offset1, offset2):
     crop_size = offset2 - offset1
     (orig_size, offset1, offset2) = model.scale_dimension(
         crop_size, orig_size, offset1, offset2)
-

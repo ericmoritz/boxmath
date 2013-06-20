@@ -23,11 +23,11 @@ def mb():
     b = resize(b, 1000, 1000)
 
     def resizer(img, w, h):
-        img.resize(w, h, filter=FILTER)
+        img.resize(int(w), int(h), filter=FILTER)
         return img
 
     def cropper(img, l,t,r,b):
-        img.crop(l,t,r,b)
+        img.crop(int(l),int(t),int(r),int(b))
         return img
 
     t = make_transformer(b, resizer, cropper)
