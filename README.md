@@ -7,8 +7,8 @@ crop actions and producing a resulting crop/resize action pair.
 
 This is possible given the following insights:
 
-   box resize (width, height) resize (w2, h2) = box resize (w2, h2)
-   box crop (left, top, right, bottom) crop (l,t,r,b) = box crop (left+l, top+t, left+r, top+b)
+    box resize (width, height) resize (w2, h2) = box resize (w2, h2)
+    box crop (left, top, right, bottom) crop (l,t,r,b) = box crop (left+l, top+t, left+r, top+b)
 
 With these two insights, we can compose two resize and two crop actions.  The next step
 is composing a resize and crop action.
