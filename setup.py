@@ -1,4 +1,5 @@
 from setuptools import setup
+from boxmath import __version__
 
 try:
     from setuptools.command.test import test
@@ -20,6 +21,7 @@ else:
 
 setup(
     name="boxmath",
+    version=__version__,
     description="Simple image box arithmatic",
     packages=["boxmath"],
     tests_require=["pytest"],
