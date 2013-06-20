@@ -47,11 +47,11 @@ The usage is fairly simple:
     
     # render
     def resizer(img, w, h):
-       img.resize(w, h, filter="gaussian")
-       return img
-    
+        img.resize(int(w), int(h), filter=FILTER)
+        return img
+
     def cropper(img, l,t,r,b):
-        img.crop(l,t,r,b)
+        img.crop(int(l),int(t),int(r),int(b))
         return img
     
     t = make_transformer(b, resizer, cropper)
@@ -63,4 +63,12 @@ Normally, if we would of used wand or PIL directly, each resize would
 degrade the image.  The action of down scaling and then up scaling
 would wreck the quality of the image; with the power of math, we
 only apply the resize and crop when we need render the image.
+
+Not that the width, height, left, top, right, and bottom values
+passed to the resizer and cropper functions are cast as ints.
+
+This is because they are either fractions.Fraction() instances or
+int().  `boxmath` uses the Fraction class to ensure precision while
+resizing and cropping.
+
 

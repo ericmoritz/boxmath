@@ -4,9 +4,15 @@ and the resulting in a final resize and crop operation calculated from that chai
 
 This is to efficiantly resize an image without repeated resize operations which degrade quality.
 """
-
-from fractions import Fraction
+import sys
 from collections import namedtuple
+
+# If we're in 2.6, use the backported 2.7 fractions module
+if sys.version_info < (2,7):
+    from fractions27 import Fraction
+else:
+# otherwise use the native one
+    from fractions import Fraction
 
 _Box = namedtuple("Box", ['width', 'height', 'left', 'top', 'right', 'bottom'])
 _Size = namedtuple("Size", ['width', 'height'])
@@ -17,14 +23,14 @@ def box(width, height):
 
 def new_box(width, height, left, top, right, bottom):
     return _Box(
-        width, 
-        height, 
+        width,
+        height,
         left,
-        top, 
+        top,
         right,
         bottom,
     )
-    
+
 
 def resize(box, width, height):
     """
@@ -36,7 +42,7 @@ def resize(box, width, height):
 
     Takes a 0,0,100,100 crop of a 200x200 image.
     which results in a 100x100 and resizes it to 50x50
-    
+
     This should scale everything by 1/2
 
     >>> resize(
@@ -87,12 +93,18 @@ def crop(box, left, top, right, bottom):
         box.left + right,
         box.top + bottom,
    )
-    
+
 
 def make_transformer(box, resize_cb, crop_cb):
     def inner(img0):
-        img1 = resize_cb(img0, int(box.width), int(box.height))
-        return crop_cb(img1, int(box.left), int(box.top), int(box.right), int(box.bottom))
+        img1 = resize_cb(img0, box.width, box.height)
+        return crop_cb(
+            img1,
+            box.left,
+            box.top,
+            box.right,
+            box.bottom
+        )
     return inner
 
 
@@ -121,4 +133,3 @@ def scale_dimension(req_size, orig_size, offset1, offset2):
     new_offset1 = offset1 * scale
     new_offset2 = offset2 * scale
     return new_size, new_offset1, new_offset2
-
