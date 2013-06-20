@@ -3,3 +3,4 @@
 *.egg-info
 flower-*.jpg
 *.egg
+.envs/
