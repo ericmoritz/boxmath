@@ -1,19 +1,30 @@
+"""
+This module allows crop and resize operations to be applied in a chain
+and the resulting in a final resize and crop operation calculated from that chain.
+
+This is to efficiantly resize an image without repeated resize operations which degrade quality.
+"""
+
+from fractions import Fraction
 from collections import namedtuple
 
-Box = namedtuple("Box", ['width', 'height', 'left', 'top', 'right', 'bottom'])
+_Box = namedtuple("Box", ['width', 'height', 'left', 'top', 'right', 'bottom'])
+_Size = namedtuple("Size", ['width', 'height'])
 
 def box(width, height):
-    return Box(
-        width, height, 0, 0, width, height
+    return new_box(width, height, 0, 0, width, height)
+
+
+def new_box(width, height, left, top, right, bottom):
+    return _Box(
+        width, 
+        height, 
+        left,
+        top, 
+        right,
+        bottom,
     )
-
-
-def bbox(_box):
-    return box(
-        _box.right - _box.left,
-        _box.bottom - _box.top
-        )
-
+    
 
 def resize(box, width, height):
     """
@@ -39,20 +50,24 @@ def resize(box, width, height):
     ...    200, 200
     ... )
     Box(width=400.0, height=400.0, left=0.0, top=0.0, right=200.0, bottom=200.0)
-
-
     """
-    box_bbox = bbox(box)
-    width_scale = float(width) / float(box_bbox.width)
-    height_scale = float(height) / float(box_bbox.height)
+    new_width, left, right = scale_dimension(
+        width,
+        box.width,
+        box.left,
+        box.right
+    )
 
-    return Box(
-        box.width * width_scale,
-        box.height * height_scale,
-        box.left * width_scale,
-        box.top * height_scale,
-        box.right * width_scale,
-        box.bottom * height_scale
+    new_height, top, bottom = scale_dimension(
+        height,
+        box.height,
+        box.top,
+        box.bottom
+    )
+
+    return new_box(
+        new_width, new_height,
+        left, top, right, bottom
     )
 
 
@@ -64,7 +79,7 @@ def crop(box, left, top, right, bottom):
     ... )
     Box(width=320, height=200, left=10, top=20, right=25, bottom=45)
     """
-    return Box(
+    return new_box(
         box.width,
         box.height,
         box.left + left,
@@ -76,7 +91,34 @@ def crop(box, left, top, right, bottom):
 
 def make_transformer(box, resize_cb, crop_cb):
     def inner(img0):
-        img1 = resize_cb(img0, box.width, box.height)
-        return crop_cb(img1, box.left, box.top, box.right, box.bottom)
+        img1 = resize_cb(img0, int(box.width), int(box.height))
+        return crop_cb(img1, int(box.left), int(box.top), int(box.right), int(box.bottom))
     return inner
+
+
+def size(box):
+    """Return the actual size of the box"""
+    width = box.right - box.left
+    height = box.bottom - box.top
+    return _Size(width, height)
+
+
+###-------------------------------------------------------------------
+### Internal
+###-------------------------------------------------------------------
+def scale_dimension(req_size, orig_size, offset1, offset2):
+    assert orig_size > 0
+    assert req_size > 0
+    assert offset1 != offset2
+    assert req_size > 0
+
+    crop_size = offset2 - offset1
+    # Get the amount we need to scale everything to
+    scale = Fraction(req_size, crop_size)
+
+    # do the scaling to get the requested size out of the resize and crop
+    new_size = orig_size * scale
+    new_offset1 = offset1 * scale
+    new_offset2 = offset2 * scale
+    return new_size, new_offset1, new_offset2
 
