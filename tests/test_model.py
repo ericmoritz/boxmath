@@ -1,6 +1,6 @@
 import pytest
-import boxmath
-from boxmath import size
+from boxmath import model
+from boxmath.model import size
 from fractions import Fraction
 
 def get_percent(total, percent):
@@ -27,21 +27,21 @@ def test_resize(width, height, left, top, right, bottom):
     
 
     # identity proprety
-    box = boxmath.new_box(width, height, 0, 0, width, height)
-    id_box = boxmath.resize(box, width, height)
+    box = model.new_box(width, height, 0, 0, width, height)
+    id_box = model.resize(box, width, height)
     assert id_box == box
 
     # identity property with a crop
-    box = boxmath.new_box(width, height, left, top, right, bottom)
+    box = model.new_box(width, height, left, top, right, bottom)
     box_size = size(box)
-    id_box = boxmath.resize(box, box_size.width, box_size.height)
+    id_box = model.resize(box, box_size.width, box_size.height)
     assert id_box == box
 
     # inverse property
-    box = boxmath.new_box(width, height, left, top, right, bottom)
-    box2 = boxmath.resize(box, width / 2, height / 2)
+    box = model.new_box(width, height, left, top, right, bottom)
+    box2 = model.resize(box, width / 2, height / 2)
     box2_size = size(box2)
-    box2 = boxmath.resize(box2, 
+    box2 = model.resize(box2, 
                           box2_size.width * 2, 
                           box2_size.height * 2
                           )
@@ -64,7 +64,7 @@ def test_scale_dimension(orig_size, req_size, offset1, offset2):
 
     def invert((new_size, new_offset1, new_offset2)):
         crop_size = offset2 - offset1
-        return boxmath.scale_dimension(
+        return model.scale_dimension(
             crop_size,
             new_size,
             new_offset1,
@@ -72,7 +72,7 @@ def test_scale_dimension(orig_size, req_size, offset1, offset2):
             )
 
     # assert the inverse
-    assert (orig_size, offset1, offset2) == invert(boxmath.scale_dimension(
+    assert (orig_size, offset1, offset2) == invert(model.scale_dimension(
             req_size,
             orig_size,
             offset1,
@@ -83,6 +83,6 @@ def test_scale_dimension(orig_size, req_size, offset1, offset2):
 
     # If I ask for the crop size, I should get the orig_size back
     crop_size = offset2 - offset1
-    (orig_size, offset1, offset2) = boxmath.scale_dimension(
+    (orig_size, offset1, offset2) = model.scale_dimension(
         crop_size, orig_size, offset1, offset2)
 
