@@ -5,3 +5,4 @@ flower-*.jpg
 *.egg
 .envs/
 dist/
+.cache/

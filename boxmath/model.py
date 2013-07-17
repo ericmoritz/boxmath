@@ -14,97 +14,98 @@ else:
 # otherwise use the native one
     from fractions import Fraction
 
-_Box = namedtuple("Box", ['width', 'height', 'left', 'top', 'right', 'bottom'])
-_Size = namedtuple("Size", ['width', 'height'])
+Box = namedtuple("Box", ['wscale', 'hscale', 'left', 'top', 'right', 'bottom'])
+Size = namedtuple("Size", ['width', 'height'])
+_Box = Box
+_Size = Size
+
 
 def box(width, height):
     return new_box(width, height, 0, 0, width, height)
 
-
 def new_box(width, height, left, top, right, bottom):
-    return _Box(
-        width,
-        height,
-        left,
-        top,
-        right,
-        bottom,
+    return Box(
+        wscale=Fraction(1),
+        hscale=Fraction(1),
+        left=left,
+        top=top,
+        right=right,
+        bottom=bottom
     )
 
 
 def resize(box, width, height):
     """
-    >>> resize(
-    ...    Box(100, 100, 0, 0, 50, 50), # resulting image is 50x50
-    ...    50, 50
+    >>> from testfixtures import compare
+    >>> _ = compare(
+    ...     resize(
+    ...        Box(1.0, 1.0, 0, 0, 100, 100),
+    ...        50, 50
+    ...     ),
+    ...  Box(wscale=0.5, hscale=0.5, left=0.0, top=0.0, 
+    ...      right=100.0, bottom=100.0)
     ... )
-    Box(width=100.0, height=100.0, left=0.0, top=0.0, right=50.0, bottom=50.0)
-
-    Takes a 0,0,100,100 crop of a 200x200 image.
-    which results in a 100x100 and resizes it to 50x50
-
-    This should scale everything by 1/2
-
-    >>> resize(
-    ...    Box(200, 200, 0, 0, 100, 100),
-    ...    50, 50
-    ... )
-    Box(width=100.0, height=100.0, left=0.0, top=0.0, right=50.0, bottom=50.0)
-
-    >>> resize(
-    ...    Box(200, 200, 0, 0, 100, 100),
-    ...    200, 200
-    ... )
-    Box(width=400.0, height=400.0, left=0.0, top=0.0, right=200.0, bottom=200.0)
     """
-    new_width, left, right = scale_dimension(
-        width,
-        box.width,
-        box.left,
-        box.right
-    )
+    cw = box.right - box.left
+    ch = box.bottom - box.top
+    ws = Fraction(width,  cw)
+    hs = Fraction(height, ch)
 
-    new_height, top, bottom = scale_dimension(
-        height,
-        box.height,
+    return Box(
+        ws,
+        hs,
+        box.left,
         box.top,
+        box.right,
         box.bottom
     )
-
-    return new_box(
-        new_width, new_height,
-        left, top, right, bottom
-    )
-
 
 def crop(box, left, top, right, bottom):
     """
     >>> crop(
-    ...     Box(320, 200, 10, 20, 30, 40),
-    ...     0, 0, 15, 25
+    ...     Box(0.5, 0.5, 0, 0, 100, 100),
+    ...     0, 0, 25, 25
     ... )
-    Box(width=320, height=200, left=10, top=20, right=25, bottom=45)
-    """
-    return new_box(
-        box.width,
-        box.height,
-        box.left + left,
-        box.top + top,
-        box.left + right,
-        box.top + bottom,
-   )
+    Box(wscale=0.5, hscale=0.5, left=0.0, top=0.0, right=50.0, bottom=50.0)
 
+    """
+    (l,t,r,b) = scale_crop(left, top, right, bottom,box.wscale, box.hscale)
+    return Box(
+        box.wscale,
+        box.hscale,
+        l,t,r,b
+    )
+
+
+def scale_crop(l,t,r,b, ws, hs):
+    return (
+        l / ws,
+        t / hs,
+        r / ws,
+        b / hs
+    )
+        
+        
 
 def make_transformer(box, resize_cb, crop_cb):
     def inner(img0):
-        img1 = resize_cb(img0, box.width, box.height)
-        return crop_cb(
-            img1,
+        ws = box.wscale
+        hs = box.hscale
+        cw = box.right - box.left
+        ch = box.bottom - box.top
+        width = cw * ws
+        height = ch * hs
+        
+        img1 = crop_cb(
+            img0,
             box.left,
             box.top,
             box.right,
             box.bottom
         )
+        img2 = resize_cb(img1, width, height)
+        return img2
+
     return inner
 
 
@@ -113,23 +114,3 @@ def size(box):
     width = box.right - box.left
     height = box.bottom - box.top
     return _Size(width, height)
-
-
-###-------------------------------------------------------------------
-### Internal
-###-------------------------------------------------------------------
-def scale_dimension(req_size, orig_size, offset1, offset2):
-    assert orig_size > 0
-    assert req_size > 0
-    assert offset1 != offset2
-    assert req_size > 0
-
-    crop_size = offset2 - offset1
-    # Get the amount we need to scale everything to
-    scale = Fraction(req_size, crop_size)
-
-    # do the scaling to get the requested size out of the resize and crop
-    new_size = orig_size * scale
-    new_offset1 = offset1 * scale
-    new_offset2 = offset2 * scale
-    return new_size, new_offset1, new_offset2
