@@ -43,3 +43,4 @@ apply s =
     w' = cw * ws
     h' = ch * hs
     crop' = crop_ s
+
