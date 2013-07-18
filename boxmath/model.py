@@ -111,6 +111,10 @@ def make_transformer(box, resize_cb, crop_cb):
 
 def size(box):
     """Return the actual size of the box"""
-    width = box.right - box.left
-    height = box.bottom - box.top
+    ws = box.wscale
+    hs = box.hscale
+    cw = box.right - box.left
+    ch = box.bottom - box.top
+    width = cw * ws
+    height = ch * hs
     return _Size(width, height)
