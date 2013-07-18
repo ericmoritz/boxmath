@@ -4,5 +4,5 @@ and the resulting in a final resize and crop operation calculated from that chai
 
 This is to efficiantly resize an image without repeated resize operations which degrade quality.
 """
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 from .model import box, resize, crop, make_transformer, size
