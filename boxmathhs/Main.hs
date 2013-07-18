@@ -1,29 +1,28 @@
 module Main where
 
-import qualified Algorithm as A
+import qualified Algorithm0 as A
 import qualified Model as M
 import Test.QuickCheck
-import Test.QuickCheck.Arbitrary
 
 prop_crop_resize =
-  forAll new_crop_resize property
+  forAll new_crop_resize prop
   where
-    property (w,h,crop,w1,h1) =
+    prop (w,h,crop,w1,h1) =
       cmp m a
       where
         m = M.resize w1 h1 $ M.crop crop $ M.new w h
-        (w',h',crop') = A.apply $ A.resize w1 h1 $ A.crop crop $ A.new w h
-        a = M.resize w' h' $ M.crop crop' $ M.new w h
+        f = A.apply M.resize M.crop  $ A.resize w1 h1 $ A.crop crop $ A.new w h
+        a = f $ M.new w h 
 
 prop_resize_crop =
-  forAll new_resize_crop property
+  forAll new_resize_crop prop
   where
-    property (w,h,crop,w1,h1) =
+    prop (w,h,crop,w1,h1) =
       cmp m a
       where
         m = M.crop crop $ M.resize w1 h1 $ M.new w h
-        (w',h',crop') = A.apply $ A.crop crop $ A.resize w1 h1 $ A.new w h
-        a = M.resize w' h' $ M.crop crop' $ M.new w h
+        f = A.apply M.resize M.crop $ A.crop crop $ A.resize w1 h1 $ A.new w h
+        a = f $ M.new w h
 
 cmp (ml,mt,mr,mb) (al,at,ar,ab) =
   map floor m == map floor a
@@ -32,10 +31,10 @@ cmp (ml,mt,mr,mb) (al,at,ar,ab) =
     a = [al,at,ar,ab]
 
 new_crop_resize = do
-  w <- arbitrary
-  h <- arbitrary
-  w1 <- arbitrary
-  h1 <- arbitrary
+  w <- choose (1, 1000)
+  h <- choose (1, 1000)
+  w1 <- choose (1, 1000)
+  h1 <- choose (1, 1000)
 
   l <- choose (1, w)
   t <- choose (1, h)
