@@ -1,7 +1,7 @@
 import pytest
 from boxmath import model
 from boxmath.model import size
-from fractions import Fraction
+from boxmath.fractions_compat import Fraction
 from testfixtures import compare
 
 def tmodel(w,h):
@@ -45,8 +45,8 @@ def choose(percent, bottom, top):
     return int(bottom + span * pct)
 
 
-@pytest.mark.randomize(w=int,h=int, w1=int, h1=int, min_num=1, max_num=MAX)
-@pytest.mark.randomize(lp=int, tp=int, rp=int, bp=int, min_num=0, max_num=100)
+@pytest.mark.randomize(w=int,h=int, w1=int, h1=int, min_num=1, max_num=MAX, ncalls=2)
+@pytest.mark.randomize(lp=int, tp=int, rp=int, bp=int, min_num=0, max_num=100, ncalls=2)
 def test_crop_resize(w,h,w1,h1,lp,tp,rp,bp):
     l = choose(lp, 1, w)
     t = choose(tp, 1, h)
@@ -85,11 +85,10 @@ def test_crop_resize(w,h,w1,h1,lp,tp,rp,bp):
        )
     )
 
-    print box
     compare(m,x)
 
-@pytest.mark.randomize(w=int,h=int, w1=int, h1=int, min_num=1, max_num=MAX)
-@pytest.mark.randomize(lp=int, tp=int, rp=int, bp=int, min_num=0, max_num=100)
+@pytest.mark.randomize(w=int,h=int, w1=int, h1=int, min_num=1, max_num=MAX, ncalls=2)
+@pytest.mark.randomize(lp=int, tp=int, rp=int, bp=int, min_num=0, max_num=100, ncalls=2)
 def test_resize_crop(w,h,w1,h1,lp,tp,rp,bp):
     l = choose(lp, 1, w1)
     t = choose(tp, 1, h1)
@@ -112,11 +111,9 @@ def test_resize_crop(w,h,w1,h1,lp,tp,rp,bp):
     )
 
     def resize_cb(i, w, h):
-        print map(int, [w,h])
         return tresize(w,h,i)
 
     def crop_cb(i, l,t,r,b):
-        print map(int, [l,t,r,b])
         return tcrop((l,t,r,b),i)
 
     f = model.make_transformer(box, resize_cb, crop_cb)
@@ -130,12 +127,11 @@ def test_resize_crop(w,h,w1,h1,lp,tp,rp,bp):
        )
     )
 
-    print (w,h,l,t,r,b,w1,h1)
     compare(m,x)
 
 @pytest.mark.randomize(left=int, top=int, right=int, bottom=int, min_num=1,
-                       max_num=MAX)
-@pytest.mark.randomize(width=int, height=int, min_num=1, max_num=MAX)
+                       max_num=MAX, ncalls=2)
+@pytest.mark.randomize(width=int, height=int, min_num=1, max_num=MAX, ncalls=2)
 def test_resize(width, height, left, top, right, bottom):
     # sort the percents
     top, bottom = sorted([top, bottom])

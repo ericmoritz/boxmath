@@ -7,12 +7,7 @@ This is to efficiantly resize an image without repeated resize operations which 
 import sys
 from collections import namedtuple
 
-# If we're in 2.6, use the backported 2.7 fractions module
-if sys.version_info < (2,7):
-    from fractions27 import Fraction
-else:
-# otherwise use the native one
-    from fractions import Fraction
+from boxmath.fractions_compat import Fraction
 
 Box = namedtuple("Box", ['wscale', 'hscale', 'left', 'top', 'right', 'bottom'])
 Size = namedtuple("Size", ['width', 'height'])
