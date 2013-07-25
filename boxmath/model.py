@@ -6,7 +6,6 @@ This is to efficiantly resize an image without repeated resize operations which 
 """
 import sys
 from collections import namedtuple
-
 from boxmath.fractions_compat import Fraction
 
 Box = namedtuple("Box", ['wscale', 'hscale', 'left', 'top', 'right', 'bottom'])
@@ -64,11 +63,22 @@ def crop(box, left, top, right, bottom):
     Box(wscale=0.5, hscale=0.5, left=0.0, top=0.0, right=50.0, bottom=50.0)
 
     """
-    (l,t,r,b) = scale_crop(left, top, right, bottom,box.wscale, box.hscale)
+    
+
+    (l,t,r,b) = scale_crop(
+        left, 
+        top, 
+        right,
+        bottom,
+        box.wscale, box.hscale
+    )
     return Box(
         box.wscale,
         box.hscale,
-        l,t,r,b
+        box.left + l,
+        box.top + t,
+        box.left + r,
+        box.top + b
     )
 
 
