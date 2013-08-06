@@ -31,9 +31,9 @@ resize w h s =
     hs = h / ch
     crop' = crop_ s
 
-apply :: State -> (Float, Float, Crop)
-apply s =
-    (w', h', crop')
+apply :: (Float -> Float -> a -> a) -> (Crop -> a -> a) -> State -> (a -> a)
+apply resize_cb crop_cb s =
+  resize_cb w' h' . crop_cb crop'
   where 
     (l,t,r,b) = crop_ s
     ws = wscale s
@@ -43,3 +43,4 @@ apply s =
     w' = cw * ws
     h' = ch * hs
     crop' = crop_ s
+

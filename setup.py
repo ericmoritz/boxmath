@@ -36,7 +36,7 @@ setup(
     url="http://github.com/ericmoritz/boxmath",
     long_description=readme(),
     packages=["boxmath"],
-    tests_require=["pytest", "pytest-quickcheck", "testfixtures"],
+    tests_require=["pytest-quickcheck", "testfixtures", "pytest"],
     cmdclass=cmdclass,
     classifiers=[
         'Development Status :: 3 - Alpha',
